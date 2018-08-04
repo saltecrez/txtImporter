@@ -1,2 +1,2 @@
 # txtImporter
-TANGO server for the archiviation on .txt files
+TANGO server for the archiviation of .txt files
