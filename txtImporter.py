@@ -31,6 +31,20 @@ class txtImporterClass(PyTango.DeviceClass):
                                        PyTango.AttrWriteType.READ],
                                        { 'Unit' : "", } ]
     }
+    device_property_list = { 
+        'WatchPath': 
+            [PyTango.DevString,
+             'Incoming directory','',
+            [] ],
+        'EventList':
+            [PyTango.DevVarStringArray,
+             'Events that trigger file copy',[],
+            [] ],
+        'WorkerNumber':
+            [PyTango.DevUShort,
+             'Number of threads for processing new files',[],
+            [] ],
+    }       
 
 
 # 3- terzo blocco, implementa metodi eseguiti da comandi e attributi
@@ -41,17 +55,42 @@ class txtImporter(PyTango.Device_4Impl):
         self.info_stream('In txtImporter.__init__')
         txtImporter.init_device(self)
 
+    def get_device_properties(self):
+        db = PyTango.Database()
+        list_prop = db.get_device_property_list(self.get_name(),"*")
+        proxy = PyTango.DeviceProxy(list_prop.name)
+        property_names = list_prop.value_string
+        device_properties = proxy.get_property(property_names)
+        return device_properties 
+        
+    def watchpath(self):    
+        watchpath = self.get_device_properties()["WatchPath"][0]
+        return watchpath
+
+    def workernr(self):
+        workernr = self.get_device_properties()["WorkerNumber"][0]
+        return workernr
+
+    def eventlist(self):
+        eventlist=[]
+        dummy = self.get_device_properties()["EventList"]
+        l = len(dummy)
+        for i in range(l):
+            eventlist.append(dummy[i])
+        return eventlist
+
     def init_device(self):
         self.info_stream('In Python init_device method')
         self.set_state(PyTango.DevState.ON)
-        self.attr_regular = 3
-        self.attr_warning = 3 
-        self.attr_failed = 3 
+        self.attr_regular = self.attr_warning = self.attr_failed = 3
 
     #------------------------------------------------------------------
 
     def delete_device(self):
         self.info_stream('txtImporter.delete_device')
+
+    def read_WatchPath(self):
+        self.info_stream('In read_device_properties')
 
     #------------------------------------------------------------------
     # COMMANDS
